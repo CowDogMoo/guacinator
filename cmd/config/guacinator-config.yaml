@@ -1,0 +1,12 @@
+---
+debug: false
+
+log:
+  format: text
+  level: info
+
+guac:
+  scheme: https
+  url: guacamole.techvomit.xyz
+  port: 443
+  vnc_port: 5901
