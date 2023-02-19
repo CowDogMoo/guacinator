@@ -1,0 +1,11 @@
+---
+extends: default
+
+rules:
+  line-length:
+    max: 200
+    level: warning
+  truthy: false
+ignore: |
+  kubernetes/apps/system-upgrade/system-upgrade-controller/plans/agent.yaml
+  kubernetes/apps/system-upgrade/system-upgrade-controller/plans/server.yaml
