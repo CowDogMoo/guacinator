@@ -19,10 +19,7 @@ const (
 )
 
 var (
-	scriptsDir    string
 	deploymentDir string
-	k3sAnsibleDir string
-	home          string
 )
 
 func init() {
