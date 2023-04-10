@@ -51,7 +51,7 @@ jobs:
         uses: browniebroke/pre-commit-autoupdate-action@main
 
       - name: Create Pull Request with pre-commit updates
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.BOT_TOKEN }}
           base: main
