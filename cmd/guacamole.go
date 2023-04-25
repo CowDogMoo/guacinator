@@ -322,7 +322,24 @@ func setAdminPW(token string, old string, new string) error {
 	return nil
 }
 
-// CreateGuacamoleConnection creates a connection in guacamole.
+// CreateGuacamoleConnection establishes a new connection in Guacamole using the provided VncHost information.
+//
+// Parameters:
+//
+// vncHost: A VncHost struct containing the necessary information for the connection.
+//
+// Returns:
+//
+// error: An error if the connection cannot be created.
+//
+// Example:
+//
+// vncHost := VncHost{Name: "Example", IP: "192.168.1.100", Port: 5900, Password: "password"}
+// err := CreateGuacamoleConnection(vncHost)
+//
+//	if err != nil {
+//	    log.Fatalf("Failed to create connection: %v", err)
+//	}
 func CreateGuacamoleConnection(vncHost VncHost) error {
 
 	newConnection := types.GuacConnection{
@@ -347,7 +364,26 @@ func CreateGuacamoleConnection(vncHost VncHost) error {
 	return nil
 }
 
-// CreateAdminUser creates an admin user with the input password.
+// CreateAdminUser creates a new admin user in Guacamole with the specified username and password.
+//
+// Parameters:
+//
+// user: A string representing the desired username for the new admin user.
+// password: A string representing the desired password for the new admin user.
+//
+// Returns:
+//
+// error: An error if the admin user cannot be created.
+//
+// Example:
+//
+// username := "admin"
+// password := "secure_password"
+// err := CreateAdminUser(username, password)
+//
+//	if err != nil {
+//	    log.Fatalf("Failed to create admin user: %v", err)
+//	}
 func CreateAdminUser(user string, password string) error {
 	newUser := types.GuacUser{
 		Username: user,
@@ -375,7 +411,24 @@ func CreateAdminUser(user string, password string) error {
 	return nil
 }
 
-// DeleteGuacUser deletes a Guacamole user.
+// DeleteGuacUser removes a specified Guacamole user.
+//
+// Parameters:
+//
+// user: A string representing the username of the Guacamole user to be deleted.
+//
+// Returns:
+//
+// error: An error if the specified user cannot be deleted.
+//
+// Example:
+//
+// username := "user_to_delete"
+// err := DeleteGuacUser(username)
+//
+//	if err != nil {
+//	    log.Fatalf("Failed to delete user: %v", err)
+//	}
 func DeleteGuacUser(user string) error {
 
 	if err = guacClient.DeleteUser(user); err != nil {
