@@ -1,7 +1,6 @@
 #!/bin/bash
-set -ex
 
-REPO="$(grep "url" .git/config)"
+REPO=$(grep "url" .git/config)
 
 if [[ "${REPO}" == *https* ]]; then
 	echo "${REPO}" | awk -F '://' '{print $2}' | awk -F '.git' '{print $1}'
