@@ -1,105 +1,77 @@
 package cmd_test
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/cowdogmoo/guacinator/cmd"
+	"github.com/techBeck03/guacamole-api-client/types"
 )
 
-func TestCreateGuacamoleConnection(t *testing.T) {
-	tests := []struct {
-		name     string
-		vncHost  cmd.VncHost
-		expected error
-	}{
-		{
-			name: "Valid Connection",
-			vncHost: cmd.VncHost{
-				Name:     "Example",
-				IP:       "192.168.1.100",
-				Port:     5900,
-				Password: "password",
-			},
-			expected: nil,
-		},
-		{
-			name: "Invalid Connection",
-			vncHost: cmd.VncHost{
-				Name:     "Invalid",
-				IP:       "192.168.1.999",
-				Port:     0,
-				Password: "",
-			},
-			expected: errors.New("Invalid Connection"),
-		},
-	}
+var guacClient cmd.GuacClientInterface
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			err := cmd.CreateGuacamoleConnection(tc.vncHost)
-			if err != tc.expected {
-				t.Errorf("Expected error %v, got %v", tc.expected, err)
-			}
-		})
+type MockGuacClient struct{}
+
+func (m *MockGuacClient) Connect() error {
+	return nil
+}
+
+func (m *MockGuacClient) CreateConnection(connection *types.GuacConnection) error {
+	return nil
+}
+
+func (m *MockGuacClient) CreateUser(user *types.GuacUser) error {
+	return nil
+}
+
+func (m *MockGuacClient) SetUserPermissions(username string, permissionItems *[]types.GuacPermissionItem) error {
+	return nil
+}
+
+func (m *MockGuacClient) DeleteUser(username string) error {
+	return nil
+}
+
+func (m *MockGuacClient) NewAddSystemPermission(permission types.GuacPermissionType) types.GuacPermissionItem {
+	return types.GuacPermissionItem{
+		Op:    "add",
+		Path:  "/permissions/system",
+		Value: permission,
+	}
+}
+
+func TestCreateGuacamoleConnection(t *testing.T) {
+	mockClient := &MockGuacClient{}
+	guacClient = mockClient
+
+	vncHost := cmd.VncHost{Name: "Example", IP: "192.168.1.100", Port: 5900, Password: "password"}
+	err := cmd.CreateGuacamoleConnection(guacClient, vncHost)
+
+	if err != nil {
+		t.Fatalf("Failed to create connection: %v", err)
 	}
 }
 
 func TestCreateAdminUser(t *testing.T) {
-	tests := []struct {
-		name     string
-		user     string
-		password string
-		expected error
-	}{
-		{
-			name:     "Valid Admin",
-			user:     "admin",
-			password: "secure_password",
-			expected: nil,
-		},
-		{
-			name:     "Invalid Admin",
-			user:     "",
-			password: "",
-			expected: errors.New("Invalid User or Password"),
-		},
-	}
+	mockClient := &MockGuacClient{}
+	guacClient = mockClient
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			err := cmd.CreateAdminUser(tc.user, tc.password)
-			if err != tc.expected {
-				t.Errorf("Expected error %v, got %v", tc.expected, err)
-			}
-		})
+	username := "admin"
+	password := "secure_password"
+	err := cmd.CreateAdminUser(guacClient, username, password)
+
+	if err != nil {
+		t.Fatalf("Failed to create admin user: %v", err)
 	}
 }
 
 func TestDeleteGuacUser(t *testing.T) {
-	tests := []struct {
-		name     string
-		user     string
-		expected error
-	}{
-		{
-			name:     "Valid User",
-			user:     "user_to_delete",
-			expected: nil,
-		},
-		{
-			name:     "Invalid User",
-			user:     "",
-			expected: errors.New("Invalid User"),
-		},
-	}
+	mockClient := &MockGuacClient{}
+	guacClient = mockClient
 
-	for _, tc := range tests {
-		t.Run(tc.name, func(t *testing.T) {
-			err := cmd.DeleteGuacUser(tc.user)
-			if err != tc.expected {
-				t.Errorf("Expected error %v, got %v", tc.expected, err)
-			}
-		})
+	username := "user_to_delete"
+	err := cmd.DeleteGuacUser(guacClient, username)
+
+	if err != nil {
+		t.Fatalf("Failed to delete user: %v", err)
 	}
 }

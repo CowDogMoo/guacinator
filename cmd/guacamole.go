@@ -39,6 +39,8 @@ import (
 	"github.com/techBeck03/guacamole-api-client/types"
 )
 
+type GuacPermissionType string
+
 // VncHost is used to hold the information
 // necessary to incorporate a host running VNC
 // into Guacamole.
@@ -48,10 +50,18 @@ type VncHost struct {
 	IP       string
 	Port     int
 }
+type GuacClientInterface interface {
+	Connect() error
+	CreateConnection(connection *types.GuacConnection) error
+	CreateUser(user *types.GuacUser) error
+	SetUserPermissions(username string, permissionItems *[]types.GuacPermissionItem) error
+	DeleteUser(username string) error
+	NewAddSystemPermission(permission GuacPermissionType) types.GuacPermissionItem
+}
 
 var (
 	cfg         guac.Config
-	guacClient  guac.Client
+	guacClient  GuacClientInterface
 	guacAdminPW string
 	user        string
 	password    string
@@ -154,7 +164,7 @@ var (
 			}
 
 			if vncHost.Name != "" && vncHost.Password != "" && vncHost.IP != "" {
-				if err := CreateGuacamoleConnection(vncHost); err != nil {
+				if err := CreateGuacamoleConnection(guacClient, vncHost); err != nil {
 					log.WithError(err).Errorf(
 						"failed to create %s connection in Guacamole: %v", vncHost.Name, err)
 					os.Exit(1)
@@ -174,7 +184,7 @@ var (
 				os.Exit(1)
 			}
 			if delUser != "" {
-				if err := DeleteGuacUser(delUser); err != nil {
+				if err := DeleteGuacUser(guacClient, delUser); err != nil {
 					log.WithError(err).Errorf(
 						"failed to delete %s from Guacamole: %v", delUser, err)
 					os.Exit(1)
@@ -189,7 +199,7 @@ var (
 				os.Exit(1)
 			}
 			if newAdmin != "" {
-				if err := CreateAdminUser(newAdmin, password); err != nil {
+				if err := CreateAdminUser(guacClient, newAdmin, password); err != nil {
 					log.WithError(err).Errorf(
 						"failed to create %s admin in Guacamole: %v", newAdmin, err)
 					os.Exit(1)
@@ -202,6 +212,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(guacamoleCmd)
+	guacClient = &guac.Client{}
 
 	// Required inputs
 	guacamoleCmd.Flags().StringP(
@@ -275,7 +286,8 @@ func getToken() (string, error) {
 }
 
 func connectGuac(cfg guac.Config) error {
-	guacClient = guac.New(cfg)
+	client := guac.New(cfg)
+	guacClient = &client
 
 	if err := guacClient.Connect(); err != nil {
 		return fmt.Errorf("failed to connect to Guacamole: %v", err)
@@ -340,7 +352,7 @@ func setAdminPW(token string, old string, new string) error {
 //	if err != nil {
 //	    log.Fatalf("Failed to create connection: %v", err)
 //	}
-func CreateGuacamoleConnection(vncHost VncHost) error {
+func CreateGuacamoleConnection(client GuacClientInterface, host VncHost) error {
 
 	newConnection := types.GuacConnection{
 		Name:             vncHost.Name,
@@ -384,7 +396,8 @@ func CreateGuacamoleConnection(vncHost VncHost) error {
 //	if err != nil {
 //	    log.Fatalf("Failed to create admin user: %v", err)
 //	}
-func CreateAdminUser(user string, password string) error {
+func CreateAdminUser(client GuacClientInterface, username, password string) error {
+
 	newUser := types.GuacUser{
 		Username: user,
 		Password: password,
@@ -429,7 +442,7 @@ func CreateAdminUser(user string, password string) error {
 //	if err != nil {
 //	    log.Fatalf("Failed to delete user: %v", err)
 //	}
-func DeleteGuacUser(user string) error {
+func DeleteGuacUser(client GuacClientInterface, username string) error {
 
 	if err = guacClient.DeleteUser(user); err != nil {
 		return err
