@@ -3,7 +3,6 @@ name: Pre-Commit
 on:
   pull_request:
   push:
-    branches: [main]
   # Run once a week (see https://crontab.guru)
   schedule:
     - cron: "0 0 * * 0"
@@ -14,17 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up git repository
-        uses: actions/checkout@v3.5.2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4
         with:
           python-version: "3.10"
 
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4
         with:
-          go-version: 1.19.2
+          go-version: "1.20"
 
       - name: Install homebrew
         uses: homebrew/actions/setup-homebrew@master
@@ -44,24 +43,15 @@ jobs:
           go mod tidy
           pushd magefiles; go mod tidy; popd
 
+      - name: Commit go.mod and go.sum changes to keep pre-commit happy
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add go.mod go.sum
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update go.mod and go.sum"
+
       - name: Install pre-commit dependencies
         run: mage installDeps
 
-      - name: Run pre-commit autoupdate action
-        uses: browniebroke/pre-commit-autoupdate-action@main
-
-      - name: Create Pull Request with pre-commit updates
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.BOT_TOKEN }}
-          base: main
-          branch: update/pre-commit-hooks
-          title: Update pre-commit hooks
-          signoff: true
-          committer: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
-          author: "${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>"
-          commit-message: "chore: update pre-commit hooks"
-          body: |
-            Update versions of pre-commit hooks to latest version.
-            Signed-off-by: Jayson Grace <l50@users.noreply.github.com>
-          labels: renovate/pre-commit
+      - name: Run pre-commit
+        run: pre-commit run --all-files
