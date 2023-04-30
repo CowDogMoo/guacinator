@@ -3,7 +3,7 @@ module magefile
 go 1.19
 
 require (
-	github.com/bitfield/script v0.21.4
+	github.com/bitfield/script v0.22.0
 	github.com/fatih/color v1.15.0
 	github.com/l50/goutils v1.1.8
 	github.com/magefile/mage v1.14.0
@@ -25,7 +25,7 @@ require (
 	github.com/go-git/go-git/v5 v5.5.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/itchyny/gojq v0.12.11 // indirect
+	github.com/itchyny/gojq v0.12.12 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
