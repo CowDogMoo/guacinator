@@ -39,14 +39,18 @@ import (
 	"github.com/techBeck03/guacamole-api-client/types"
 )
 
-// VncHost is used to hold the information
-// necessary to incorporate a host running VNC
-// into Guacamole.
+// VncHost represents the parameters used to establish a new connection in Guacamole.
+//
+// **Attributes:**
+// Name:     A string representing the name of the VNC host.
+// IP:       A string representing the IP address of the VNC host.
+// Port:     An integer representing the port to connect to on the VNC host.
+// Password: A string representing the password for the VNC host.
 type VncHost struct {
 	Name     string
-	Password string
 	IP       string
 	Port     int
+	Password string
 }
 
 var (
@@ -241,6 +245,97 @@ func init() {
 		"new-admin", "", "", "Create a new Guacamole admin user.")
 }
 
+// CreateGuacamoleConnection establishes a new connection in Guacamole using the provided VncHost information.
+//
+// **Parameters:**
+//
+// vncHost: A VncHost struct containing the necessary information for the connection.
+//
+// **Returns:**
+//
+// error: An error if the connection cannot be created.
+func CreateGuacamoleConnection(vncHost VncHost) error {
+
+	newConnection := types.GuacConnection{
+		Name:             vncHost.Name,
+		ParentIdentifier: "ROOT",
+		Protocol:         "vnc",
+		Attributes: types.GuacConnectionAttributes{
+			MaxConnections:        "2",
+			MaxConnectionsPerUser: "1",
+		},
+		Parameters: types.GuacConnectionParameters{
+			Hostname: vncHost.IP,
+			Port:     strconv.Itoa(vncHost.Port),
+			Password: vncHost.Password,
+		},
+	}
+
+	if err := guacClient.CreateConnection(&newConnection); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CreateAdminUser creates a new admin user in Guacamole with the specified username and password.
+//
+// **Parameters:**
+//
+// user: A string representing the desired username for the new admin user.
+// password: A string representing the desired password for the new admin user.
+//
+// **Returns:**
+//
+// error: An error if the admin user cannot be created.
+func CreateAdminUser(user string, password string) error {
+	newUser := types.GuacUser{
+		Username: user,
+		Password: password,
+	}
+
+	if err = guacClient.CreateUser(&newUser); err != nil {
+		return err
+	}
+
+	permissionItems := []types.GuacPermissionItem{
+		guacClient.NewAddSystemPermission(types.SystemPermissions{}.Administer()),
+		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateUser()),
+		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateConnection()),
+		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateConnectionGroup()),
+		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateSharingProfile()),
+	}
+
+	if err := guacClient.SetUserPermissions(newUser.Username, &permissionItems); err != nil {
+		return err
+	}
+
+	fmt.Println("Successfully created admin user " + newUser.Username)
+
+	return nil
+}
+
+// DeleteGuacUser removes a specified Guacamole user.
+//
+// **Parameters:**
+//
+// user: A string representing the username of the Guacamole user to be deleted.
+//
+// **Returns:**
+//
+// error: An error if the specified user cannot be deleted.
+func DeleteGuacUser(user string) error {
+
+	if err = guacClient.DeleteUser(user); err != nil {
+		return err
+	}
+
+	fmt.Println("Successfully created " + user)
+
+	return nil
+
+}
+
 func getToken() (string, error) {
 	var token string
 
@@ -320,123 +415,4 @@ func setAdminPW(token string, old string, new string) error {
 	}
 
 	return nil
-}
-
-// CreateGuacamoleConnection establishes a new connection in Guacamole using the provided VncHost information.
-//
-// Parameters:
-//
-// vncHost: A VncHost struct containing the necessary information for the connection.
-//
-// Returns:
-//
-// error: An error if the connection cannot be created.
-//
-// Example:
-//
-// vncHost := VncHost{Name: "Example", IP: "192.168.1.100", Port: 5900, Password: "password"}
-// err := CreateGuacamoleConnection(vncHost)
-//
-//	if err != nil {
-//	    log.Fatalf("Failed to create connection: %v", err)
-//	}
-func CreateGuacamoleConnection(vncHost VncHost) error {
-
-	newConnection := types.GuacConnection{
-		Name:             vncHost.Name,
-		ParentIdentifier: "ROOT",
-		Protocol:         "vnc",
-		Attributes: types.GuacConnectionAttributes{
-			MaxConnections:        "2",
-			MaxConnectionsPerUser: "1",
-		},
-		Parameters: types.GuacConnectionParameters{
-			Hostname: vncHost.IP,
-			Port:     strconv.Itoa(vncHost.Port),
-			Password: vncHost.Password,
-		},
-	}
-
-	if err := guacClient.CreateConnection(&newConnection); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CreateAdminUser creates a new admin user in Guacamole with the specified username and password.
-//
-// Parameters:
-//
-// user: A string representing the desired username for the new admin user.
-// password: A string representing the desired password for the new admin user.
-//
-// Returns:
-//
-// error: An error if the admin user cannot be created.
-//
-// Example:
-//
-// username := "admin"
-// password := "secure_password"
-// err := CreateAdminUser(username, password)
-//
-//	if err != nil {
-//	    log.Fatalf("Failed to create admin user: %v", err)
-//	}
-func CreateAdminUser(user string, password string) error {
-	newUser := types.GuacUser{
-		Username: user,
-		Password: password,
-	}
-
-	if err = guacClient.CreateUser(&newUser); err != nil {
-		return err
-	}
-
-	permissionItems := []types.GuacPermissionItem{
-		guacClient.NewAddSystemPermission(types.SystemPermissions{}.Administer()),
-		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateUser()),
-		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateConnection()),
-		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateConnectionGroup()),
-		guacClient.NewAddSystemPermission(types.SystemPermissions{}.CreateSharingProfile()),
-	}
-
-	if err := guacClient.SetUserPermissions(newUser.Username, &permissionItems); err != nil {
-		return err
-	}
-
-	fmt.Println("Successfully created admin user " + newUser.Username)
-
-	return nil
-}
-
-// DeleteGuacUser removes a specified Guacamole user.
-//
-// Parameters:
-//
-// user: A string representing the username of the Guacamole user to be deleted.
-//
-// Returns:
-//
-// error: An error if the specified user cannot be deleted.
-//
-// Example:
-//
-// username := "user_to_delete"
-// err := DeleteGuacUser(username)
-//
-//	if err != nil {
-//	    log.Fatalf("Failed to delete user: %v", err)
-//	}
-func DeleteGuacUser(user string) error {
-
-	if err = guacClient.DeleteUser(user); err != nil {
-		return err
-	}
-
-	fmt.Println("Successfully created " + user)
-
-	return nil
-
 }
