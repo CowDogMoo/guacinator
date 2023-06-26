@@ -25,13 +25,13 @@ THE SOFTWARE.
 */'
 
 while IFS= read -r -d '' file; do
-	if ! grep -qF "$copyright_header" "$file"; then
-		echo "Adding copyright header to ${file}"
-		temp_file=$(mktemp)
-		echo "${copyright_header}" >"${temp_file}"
-		# Add an empty line after the copyright header
-		echo "" >>"${temp_file}"
-		cat "${file}" >>"${temp_file}"
-		mv "${temp_file}" "${file}"
-	fi
+    if ! grep -qF "$copyright_header" "$file"; then
+        echo "Adding copyright header to ${file}"
+        temp_file=$(mktemp)
+        echo "${copyright_header}" > "${temp_file}"
+        # Add an empty line after the copyright header
+        echo "" >> "${temp_file}"
+        cat "${file}" >> "${temp_file}"
+        mv "${temp_file}" "${file}"
+    fi
 done < <(find . -type f -name "*.go" -print0)

@@ -69,7 +69,8 @@ func init() {
 
 	home, err = homedir.Dir()
 	if err != nil {
-		os.Exit(1)
+		log.WithError(err).Error("failed to get the home directory")
+		cobra.CheckErr(err)
 	}
 
 	pf := rootCmd.PersistentFlags()
@@ -81,7 +82,7 @@ func init() {
 
 	if err := viper.BindPFlag("debug", pf.Lookup("debug")); err != nil {
 		log.WithError(err).Error("failed to bind to debug in the yaml config")
-		os.Exit(1)
+		cobra.CheckErr(err)
 	}
 
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
