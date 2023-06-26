@@ -53,6 +53,14 @@ type VncHost struct {
 	Password string
 }
 
+type GuacService interface {
+	CreateGuacamoleConnection(vnchost VncHost) error
+	CreateAdminUser(user, password string) error
+	DeleteGuacUser(user string) error
+}
+
+type GuacServiceImpl struct{}
+
 var (
 	cfg         guac.Config
 	guacClient  guac.Client
@@ -101,6 +109,7 @@ var (
 				Password:               password,
 				DisableTLSVerification: true,
 			}
+			guacService := &GuacServiceImpl{}
 
 			/* Functionality provided by this cobra command. */
 
@@ -158,7 +167,7 @@ var (
 			}
 
 			if vncHost.Name != "" && vncHost.Password != "" && vncHost.IP != "" {
-				if err := CreateGuacamoleConnection(vncHost); err != nil {
+				if err := guacService.CreateGuacamoleConnection(vncHost); err != nil {
 					log.WithError(err).Errorf(
 						"failed to create %s connection in Guacamole: %v", vncHost.Name, err)
 					os.Exit(1)
@@ -178,7 +187,7 @@ var (
 				os.Exit(1)
 			}
 			if delUser != "" {
-				if err := DeleteGuacUser(delUser); err != nil {
+				if err := guacService.DeleteGuacUser(delUser); err != nil {
 					log.WithError(err).Errorf(
 						"failed to delete %s from Guacamole: %v", delUser, err)
 					os.Exit(1)
@@ -193,7 +202,7 @@ var (
 				os.Exit(1)
 			}
 			if newAdmin != "" {
-				if err := CreateAdminUser(newAdmin, password); err != nil {
+				if err := guacService.CreateAdminUser(newAdmin, password); err != nil {
 					log.WithError(err).Errorf(
 						"failed to create %s admin in Guacamole: %v", newAdmin, err)
 					os.Exit(1)
@@ -254,8 +263,7 @@ func init() {
 // **Returns:**
 //
 // error: An error if the connection cannot be created.
-func CreateGuacamoleConnection(vncHost VncHost) error {
-
+func (g *GuacServiceImpl) CreateGuacamoleConnection(vncHost VncHost) error {
 	newConnection := types.GuacConnection{
 		Name:             vncHost.Name,
 		ParentIdentifier: "ROOT",
@@ -272,6 +280,8 @@ func CreateGuacamoleConnection(vncHost VncHost) error {
 	}
 
 	if err := guacClient.CreateConnection(&newConnection); err != nil {
+		log.WithError(err).Errorf(
+			"failed to create %s connection in Guacamole: %v", vncHost.Name, err)
 		return err
 	}
 
@@ -288,7 +298,7 @@ func CreateGuacamoleConnection(vncHost VncHost) error {
 // **Returns:**
 //
 // error: An error if the admin user cannot be created.
-func CreateAdminUser(user string, password string) error {
+func (g *GuacServiceImpl) CreateAdminUser(user, password string) error {
 	newUser := types.GuacUser{
 		Username: user,
 		Password: password,
@@ -324,8 +334,7 @@ func CreateAdminUser(user string, password string) error {
 // **Returns:**
 //
 // error: An error if the specified user cannot be deleted.
-func DeleteGuacUser(user string) error {
-
+func (g *GuacServiceImpl) DeleteGuacUser(user string) error {
 	if err = guacClient.DeleteUser(user); err != nil {
 		return err
 	}
