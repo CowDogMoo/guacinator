@@ -1,5 +1,9 @@
 ---
 # Area
+- name: area/go
+  color: "7BD7E0"
+  description: >-
+    Changes made to go files
 - name: area/github
   color: "72ccf3"
   description: >-
@@ -8,18 +12,15 @@
   color: "BC9BE3"
   description: >-
     Changes made to pre-commit hooks
-- name: area/go
+- name: area/magefiles
   color: "7BD7E0"
   description: >-
-    Changes made to go resources
-- name: area/docs
-  color: "FBCA04"
+    Changes made to magefiles
+- name: area/go-mod-sum
+  color: "7BD7E0"
   description: >-
-    Changes made to documentation
-- name: area/ttps
-  color: "B60205"
-  description: >-
-    Changes made to ttps
+    Changes made to go.mod and go.sum
+
 # Renovate
 - name: renovate/container
   color: "ffc300"
@@ -27,6 +28,7 @@
   color: "ffc300"
 - name: renovate/github-release
   color: "ffc300"
+
 # Semantic Type
 - name: type/digest
   color: "FFEC19"
@@ -38,9 +40,7 @@
   color: "F6412D"
 - name: type/break
   color: "F6412D"
-# Release Issue
-- name: image-not-found
-  color: "ee0701"
+
 # Uncategorized
 - name: bug
   color: "ee0701"
@@ -50,9 +50,7 @@
   color: "F4D1B7"
 - name: enhancement
   color: "84b6eb"
-- name: broken-links
-  color: "7B55D7"
 - name: question
+  description: >-
+    Clarification and/or additional information required to move forward
   color: "cc317c"
-- name: community
-  color: "0e8a16"

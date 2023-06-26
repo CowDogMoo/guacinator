@@ -6,13 +6,13 @@ area/pre-commit:
   - ".pre-commit-config.yaml"
   - ".hooks/**/*"
 
-area/go:
-  - "pkg/**/*"
+-area/go:
   - "cmd/**/*"
   - "main.go"
 
-area/docs:
-  - "docs/*"
+area/magefiles:
+  - "magefiles/*"
 
-area/ttps:
-  - "ttps/**/*"
+area/go-mod-sum:
+  - "go.mod"
+  - "go.sum"

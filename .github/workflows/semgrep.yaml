@@ -2,7 +2,15 @@
 name: 🚨 Semgrep Analysis
 on:
   push:
+    branches: ["main"]
   pull_request:
+    # The branches below must be a subset of the branches above
+    branches: ["main"]
+  schedule:
+    - cron: "28 21 * * 2"
+
+permissions:
+  contents: read
 
 jobs:
   semgrep:
@@ -15,7 +23,7 @@ jobs:
       - name: Set up git repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
 
-      - uses: returntocorp/semgrep-action@v1
+      - uses: returntocorp/semgrep-action@316a1751c53ffb6689b8726910e8204ffb591b4f # v1
         with:
           config: >- # more at semgrep.dev/explore
             p/security-audit

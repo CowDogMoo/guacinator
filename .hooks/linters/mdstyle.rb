@@ -28,8 +28,6 @@ rule 'MD013', ignore_code_blocks: true
 # * Another major bullet
 exclude_rule 'MD004' # Unordered list style
 
-exclude_rule 'MD007' # Unordered list indentation
-
 # Ordered lists are fine.
 exclude_rule 'MD029'
 

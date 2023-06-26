@@ -4,18 +4,19 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/color"
-	goutils "github.com/l50/goutils"
-	"github.com/magefile/mage/mg"
-
 	"github.com/bitfield/script"
-)
-
-const (
-	debug = false
+	"github.com/l50/goutils/v2/dev/lint"
+	mageutils "github.com/l50/goutils/v2/dev/mage"
+	"github.com/l50/goutils/v2/docs"
+	"github.com/l50/goutils/v2/git"
+	"github.com/l50/goutils/v2/sys"
+	"github.com/magefile/mage/mg"
+	"github.com/magefile/mage/sh"
+	"github.com/spf13/afero"
 )
 
 var (
@@ -28,34 +29,60 @@ func init() {
 
 // InstallDeps Installs go dependencies
 func InstallDeps() error {
-	fmt.Println(color.YellowString("Installing dependencies."))
+	fmt.Println("Installing dependencies.")
 
-	if err := goutils.Tidy(); err != nil {
-		return fmt.Errorf(color.RedString(
-			"failed to install dependencies: %v", err))
+	if err := mageutils.Tidy(); err != nil {
+		return fmt.Errorf("failed to install dependencies: %v", err)
 	}
 
-	if err := goutils.InstallGoPCDeps(); err != nil {
-		return fmt.Errorf(color.RedString(
-			"failed to install pre-commit dependencies: %v", err))
+	if err := lint.InstallGoPCDeps(); err != nil {
+		return fmt.Errorf("failed to install pre-commit dependencies: %v", err)
 	}
 
-	if err := goutils.InstallVSCodeModules(); err != nil {
-		return fmt.Errorf(color.RedString(
-			"failed to install vscode-go modules: %v", err))
+	if err := mageutils.InstallVSCodeModules(); err != nil {
+		return fmt.Errorf("failed to install vscode-go modules: %v", err)
 	}
 
 	return nil
 }
 
-// InstallPreCommitHooks Installs pre-commit hooks locally
-func InstallPreCommitHooks() error {
-	mg.Deps(InstallDeps)
+// FindExportedFuncsWithoutTests finds exported functions without tests
+func FindExportedFuncsWithoutTests(pkg string) ([]string, error) {
+	funcs, err := mageutils.FindExportedFuncsWithoutTests(os.Args[1])
 
-	fmt.Println(color.YellowString("Installing pre-commit hooks."))
-	if err := goutils.InstallPCHooks(); err != nil {
-		return err
+	if err != nil {
+		log.Fatalf("failed to find exported functions without tests: %v", err)
 	}
+
+	for _, funcName := range funcs {
+		fmt.Println(funcName)
+	}
+
+	return funcs, nil
+
+}
+
+// GeneratePackageDocs generates package documentation
+// for packages in the current directory and its subdirectories.
+func GeneratePackageDocs() error {
+	fs := afero.NewOsFs()
+
+	repoRoot, err := git.RepoRoot()
+	if err != nil {
+		return fmt.Errorf("failed to get repo root: %v", err)
+	}
+	sys.Cd(repoRoot)
+
+	repo := docs.Repo{
+		Owner: "cowdogmoo",
+		Name:  "guacinator",
+	}
+
+	if err := docs.CreatePackageDocs(fs, repo); err != nil {
+		return fmt.Errorf("failed to create package docs: %v", err)
+	}
+
+	fmt.Println("Package docs created.")
 
 	return nil
 }
@@ -64,20 +91,71 @@ func InstallPreCommitHooks() error {
 func RunPreCommit() error {
 	mg.Deps(InstallDeps)
 
-	fmt.Println(color.YellowString("Updating pre-commit hooks."))
-	if err := goutils.UpdatePCHooks(); err != nil {
+	fmt.Println("Updating pre-commit hooks.")
+	if err := lint.UpdatePCHooks(); err != nil {
 		return err
 	}
 
-	fmt.Println(color.YellowString(
-		"Clearing the pre-commit cache to ensure we have a fresh start."))
-	if err := goutils.ClearPCCache(); err != nil {
+	fmt.Println("Clearing the pre-commit cache to ensure we have a fresh start.")
+	if err := lint.ClearPCCache(); err != nil {
 		return err
 	}
 
-	fmt.Println(color.YellowString("Running all pre-commit hooks locally."))
-	if err := goutils.RunPCHooks(); err != nil {
+	fmt.Println("Running all pre-commit hooks locally.")
+	if err := lint.RunPCHooks(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// RunTests runs all of the unit tests
+func RunTests() error {
+	mg.Deps(InstallDeps)
+
+	fmt.Println("Running unit tests.")
+	if err := sh.RunV(filepath.Join(".hooks", "go-unit-tests.sh"), "all"); err != nil {
+		return fmt.Errorf("failed to run unit tests: %v", err)
+	}
+
+	return nil
+}
+
+// UpdateMirror updates pkg.go.goutils with the release associated with the input tag
+func UpdateMirror(tag string) error {
+	var err error
+	fmt.Printf("Updating pkg.go.goutils with the new tag %s.", tag)
+
+	err = sh.RunV("curl", "--silent", fmt.Sprintf(
+		"https://sum.golang.org/lookup/github.com/l50/goutils/v2@%s",
+		tag))
+	if err != nil {
+		return fmt.Errorf("failed to update proxy.golang.org: %w", err)
+	}
+
+	err = sh.RunV("curl", "--silent", fmt.Sprintf(
+		"https://proxy.golang.org/github.com/l50/goutils/v2/@v/%s.info",
+		tag))
+	if err != nil {
+		return fmt.Errorf("failed to update pkg.go.goutils: %w", err)
+	}
+
+	return nil
+}
+
+// UpdateDocs updates the package documentation
+// for packages in the current directory and its subdirectories.
+func UpdateDocs() error {
+	repo := docs.Repo{
+		Owner: "l50",
+		Name:  "goutils/v2",
+	}
+
+	fs := afero.NewOsFs()
+
+	fmt.Println("Updating docs.")
+	if err := docs.CreatePackageDocs(fs, repo); err != nil {
+		return fmt.Errorf("failed to update docs: %v", err)
 	}
 
 	return nil
@@ -89,8 +167,11 @@ func RunPreCommit() error {
 // OnDemand(ubuntu)
 // func OnDemand(image string) error {
 func OnDemand() error {
-	goutils.Cd(fmt.Sprintf(
-		filepath.Join(fmt.Sprintf("%s", deploymentDir), "od")))
+	if err := sys.Cd(fmt.Sprintf(
+		filepath.Join(fmt.Sprintf("%s", deploymentDir), "od"))); err != nil {
+		return err
+	}
+
 	cmds := []string{
 		"kubectl apply -f ubuntu-deployment.yaml",
 	}
