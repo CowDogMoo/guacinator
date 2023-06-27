@@ -53,12 +53,19 @@ type VncHost struct {
 	Password string
 }
 
+// GuacService represents the interface for interacting with the Guacamole API.
+//
+// **Methods:**
+// CreateGuacamoleConnection: Creates a new Guacamole connection.
+// CreateAdminUser:           Creates a new Guacamole admin user.
+// DeleteGuacUser:            Deletes a Guacamole user.
 type GuacService interface {
 	CreateGuacamoleConnection(vnchost VncHost) error
 	CreateAdminUser(user, password string) error
 	DeleteGuacUser(user string) error
 }
 
+// GuacServiceImpl represents the implementation of the GuacService interface.
 type GuacServiceImpl struct{}
 
 var (
@@ -82,19 +89,19 @@ var (
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get Guacamole URL from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 			user, err = cmd.Flags().GetString("username")
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get username from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 			password, err = cmd.Flags().GetString("password")
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get password from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			/* Unmarshal viper values */
@@ -118,14 +125,14 @@ var (
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get input from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			// Establish a client with Guacamole
 			if err := connectGuac(cfg); err != nil {
 				log.WithError(err).Errorf(
 					"failed to connect to Guacamole: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			if guacAdminPW != "" {
@@ -133,14 +140,14 @@ var (
 				if err != nil {
 					log.WithError(err).Errorf(
 						"failed to retrieve token from Guacamole: %v", err)
-					os.Exit(1)
+					cobra.CheckErr(err)
 				}
 
 				log.Info("Setting secure password for guacadmin")
 				if err := setAdminPW(token, password, guacAdminPW); err != nil {
 					log.WithError(err).Errorf(
 						"failed to set new Guacamole admin password: %v", err)
-					os.Exit(1)
+					cobra.CheckErr(err)
 				}
 				os.Exit(0)
 			}
@@ -149,48 +156,48 @@ var (
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get input from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			vncHost.Password, err = cmd.Flags().GetString("vnc-pw")
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get input from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			vncHost.IP, err = cmd.Flags().GetString("vnc-ip")
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get input from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			if vncHost.Name != "" && vncHost.Password != "" && vncHost.IP != "" {
 				if err := guacService.CreateGuacamoleConnection(vncHost); err != nil {
 					log.WithError(err).Errorf(
 						"failed to create %s connection in Guacamole: %v", vncHost.Name, err)
-					os.Exit(1)
+					cobra.CheckErr(err)
 				}
 				os.Exit(0)
 			} else if vncHost.Name != "" && vncHost.Password == "" || vncHost.IP == "" {
 				log.Error(
 					"you must provide all required information to " +
 						"add a new connection in Guacamole")
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 
 			delUser, err := cmd.Flags().GetString("delete-user")
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get input from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 			if delUser != "" {
 				if err := guacService.DeleteGuacUser(delUser); err != nil {
 					log.WithError(err).Errorf(
 						"failed to delete %s from Guacamole: %v", delUser, err)
-					os.Exit(1)
+					cobra.CheckErr(err)
 				}
 				os.Exit(0)
 			}
@@ -199,13 +206,13 @@ var (
 			if err != nil {
 				log.WithError(err).Errorf(
 					"failed to get input from CLI input: %v", err)
-				os.Exit(1)
+				cobra.CheckErr(err)
 			}
 			if newAdmin != "" {
 				if err := guacService.CreateAdminUser(newAdmin, password); err != nil {
 					log.WithError(err).Errorf(
 						"failed to create %s admin in Guacamole: %v", newAdmin, err)
-					os.Exit(1)
+					cobra.CheckErr(err)
 				}
 				os.Exit(0)
 			}
@@ -222,21 +229,21 @@ func init() {
 	if err := guacamoleCmd.MarkFlagRequired("url"); err != nil {
 		log.WithError(err).Errorf(
 			"failed to mark required flag url: %v", err)
-		os.Exit(1)
+		cobra.CheckErr(err)
 	}
 	guacamoleCmd.Flags().StringP(
 		"username", "u", "", "Username used to authenticate with Guacamole.")
 	if err := guacamoleCmd.MarkFlagRequired("username"); err != nil {
 		log.WithError(err).Errorf(
 			"failed to mark required flag username: %v", err)
-		os.Exit(1)
+		cobra.CheckErr(err)
 	}
 	guacamoleCmd.Flags().StringP(
 		"password", "p", "", "Password used to authenticate with Guacamole.")
 	if err := guacamoleCmd.MarkFlagRequired("password"); err != nil {
 		log.WithError(err).Errorf(
 			"failed to mark required flag password: %v", err)
-		os.Exit(1)
+		cobra.CheckErr(err)
 	}
 
 	// Functionality provided by this cobra command.
@@ -254,7 +261,13 @@ func init() {
 		"new-admin", "", "", "Create a new Guacamole admin user.")
 }
 
-// CreateGuacamoleConnection establishes a new connection in Guacamole using the provided VncHost information.
+// CreateGuacamoleConnection establishes a new connection
+//
+// in Guacamole using the provided VncHost information.
+// CreatePackageDocs generates documentation for all Go packages in the current
+// directory and its subdirectories. It traverses the file tree using a provided
+// afero.Fs and Repo to create a new README.md file in each directory containing
+// a Go package. It uses a specified template file for generating the README files.
 //
 // **Parameters:**
 //
@@ -288,11 +301,14 @@ func (g *GuacServiceImpl) CreateGuacamoleConnection(vncHost VncHost) error {
 	return nil
 }
 
-// CreateAdminUser creates a new admin user in Guacamole with the specified username and password.
+// CreateAdminUser creates a new admin user in
+// Guacamole with the specified
+// username and password.
 //
 // **Parameters:**
 //
 // user: A string representing the desired username for the new admin user.
+//
 // password: A string representing the desired password for the new admin user.
 //
 // **Returns:**

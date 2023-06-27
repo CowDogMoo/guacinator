@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/bitfield/script v0.22.0
-	github.com/l50/goutils/v2 v2.0.4
+	github.com/l50/goutils/v2 v2.0.5
 	github.com/magefile/mage v1.15.0
 	github.com/spf13/afero v1.9.5
 )
@@ -41,5 +41,3 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	mvdan.cc/sh/v3 v3.6.0 // indirect
 )
-
-// replace github.com/l50/goutils/v2 => ../

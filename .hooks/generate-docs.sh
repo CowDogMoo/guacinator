@@ -32,11 +32,13 @@ if command -v mage &> /dev/null; then
 else
     echo -e "mage is not installed\n"
     echo -e "Please install mage by running the following command:\n"
-    echo -e "go install github.com/l50/goutils/v2/dev/mageutils@latest\n"
+    echo -e "go install github.com/magefile/mage@latest\n"
     exit 1
 fi
 
 repo_root
+
+cd magefiles
 
 # Run the mage generatepackagedocs command
 $(which mage) generatepackagedocs

@@ -2,12 +2,11 @@ package cmd_test
 
 import (
 	"fmt"
-	"log"
 
 	guacinator "github.com/cowdogmoo/guacinator/cmd"
 )
 
-func ExampleCreateGuacamoleConnection() {
+func ExampleGuacServiceImpl_CreateGuacamoleConnection() {
 	// Define a VncHost struct
 	vncHost := guacinator.VncHost{Name: "Test", IP: "192.168.1.1", Port: 5900, Password: "test_password"}
 
@@ -16,13 +15,14 @@ func ExampleCreateGuacamoleConnection() {
 
 	// Call the function with the struct
 	// Here, instead of calling the actual function, we're just demonstrating how it would be used
-	// In a real world context, replace this fmt.Println with guacService.CreateGuacamoleConnection(vncHost)
 	fmt.Println("guacService.CreateGuacamoleConnection(vncHost)")
-	log.Println("In actual use, replace the above fmt.Println with the actual method call using a real Guacamole service instance.")
+
 	_ = vncHost
+	// Output:
+	// guacService.CreateGuacamoleConnection(vncHost)
 }
 
-func ExampleCreateAdminUser() {
+func ExampleGuacServiceImpl_CreateAdminUser() {
 	// Define a username and password for the new admin user
 	username := "test_admin"
 	password := "test_password"
@@ -32,14 +32,15 @@ func ExampleCreateAdminUser() {
 
 	// Call the function with the username and password
 	// Here, instead of calling the actual function, we're just demonstrating how it would be used
-	// In a real world context, replace this fmt.Println with guacService.CreateAdminUser(username, password)
 	fmt.Println("guacService.CreateAdminUser(username, password)")
-	log.Println("In actual use, replace the above fmt.Println with the actual method call using a real Guacamole service instance.")
+
 	_ = username
 	_ = password
+	// Output:
+	// guacService.CreateAdminUser(username, password)
 }
 
-func ExampleDeleteGuacUser() {
+func ExampleGuacServiceImpl_DeleteGuacUser() {
 	// Define a username for the Guacamole user to be deleted
 	username := "test_user"
 
@@ -48,8 +49,9 @@ func ExampleDeleteGuacUser() {
 
 	// Call the function with the username
 	// Here, instead of calling the actual function, we're just demonstrating how it would be used
-	// In a real world context, replace this fmt.Println with guacService.DeleteGuacUser(username)
 	fmt.Println("guacService.DeleteGuacUser(username)")
-	log.Println("In actual use, replace the above fmt.Println with the actual method call using a real Guacamole service instance.")
+
 	_ = username
+	// Output:
+	// guacService.DeleteGuacUser(username)
 }

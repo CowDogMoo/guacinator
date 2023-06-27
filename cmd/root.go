@@ -30,9 +30,11 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
-	goutils "github.com/l50/goutils"
+	"github.com/l50/goutils/v2/logging"
+	"github.com/l50/goutils/v2/sys"
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -89,7 +91,8 @@ func init() {
 }
 
 func configLogging() error {
-	logger, err := goutils.CreateLogFile()
+	fs := afero.NewOsFs()
+	logger, err := logging.CreateLogFile(fs, defaultConfigDir, "guacinator.log")
 	if err != nil {
 		log.WithError(err).Error("error creating the log file")
 	}
@@ -120,7 +123,7 @@ func configLogging() error {
 	}
 
 	// Output to both stdout and the log file
-	mw := io.MultiWriter(os.Stdout, logger.FilePtr)
+	mw := io.MultiWriter(os.Stdout, logger.File)
 	log.SetOutput(mw)
 
 	return nil
@@ -155,7 +158,7 @@ func createConfigFile(cfgPath string) error {
 	}
 
 	cmd := "kubectl"
-	if !goutils.CmdExists(cmd) {
+	if !sys.CmdExists(cmd) {
 		err := fmt.Errorf("required program %s is not installed in $PATH, exiting", cmd)
 		log.WithError(err)
 		return err
@@ -188,12 +191,12 @@ func initConfig() {
 		if err := createConfigFile(
 			filepath.Join(defaultConfigDir, defaultConfigName)); err != nil {
 			log.WithError(err).Error("failed to create the config file")
-			os.Exit(1)
+			cobra.CheckErr(err)
 		}
 
 		if err := viper.ReadInConfig(); err != nil {
 			log.WithError(err).Error("error reading config file")
-			os.Exit(1)
+			cobra.CheckErr(err)
 		} else {
 			log.Debug("Using config file: ", viper.ConfigFileUsed())
 		}

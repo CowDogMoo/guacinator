@@ -71,14 +71,19 @@ func GeneratePackageDocs() error {
 	if err != nil {
 		return fmt.Errorf("failed to get repo root: %v", err)
 	}
-	sys.Cd(repoRoot)
+
+	if err := sys.Cd(filepath.Join(repoRoot, "magefiles")); err != nil {
+		return fmt.Errorf("failed to cd to magefiles directory: %v", err)
+	}
 
 	repo := docs.Repo{
 		Owner: "cowdogmoo",
 		Name:  "guacinator",
 	}
 
-	if err := docs.CreatePackageDocs(fs, repo); err != nil {
+	templatePath := filepath.Join(repoRoot, "magefiles", "tmpl", "README.md.tmpl")
+
+	if err := docs.CreatePackageDocs(fs, repo, templatePath); err != nil {
 		return fmt.Errorf("failed to create package docs: %v", err)
 	}
 
@@ -127,17 +132,17 @@ func UpdateMirror(tag string) error {
 	fmt.Printf("Updating pkg.go.goutils with the new tag %s.", tag)
 
 	err = sh.RunV("curl", "--silent", fmt.Sprintf(
-		"https://sum.golang.org/lookup/github.com/l50/goutils/v2@%s",
+		"https://sum.golang.org/lookup/github.com/cowdogmoo/guacinator/@%s",
 		tag))
 	if err != nil {
 		return fmt.Errorf("failed to update proxy.golang.org: %w", err)
 	}
 
 	err = sh.RunV("curl", "--silent", fmt.Sprintf(
-		"https://proxy.golang.org/github.com/l50/goutils/v2/@v/%s.info",
+		"https://proxy.golang.org/github.com/cowdogmoo/guacinator/@v/%s.info",
 		tag))
 	if err != nil {
-		return fmt.Errorf("failed to update pkg.go.goutils: %w", err)
+		return fmt.Errorf("failed to update pkg.go.dev: %w", err)
 	}
 
 	return nil
@@ -147,14 +152,16 @@ func UpdateMirror(tag string) error {
 // for packages in the current directory and its subdirectories.
 func UpdateDocs() error {
 	repo := docs.Repo{
-		Owner: "l50",
-		Name:  "goutils/v2",
+		Owner: "cowdogmoo",
+		Name:  "guacinator",
 	}
 
 	fs := afero.NewOsFs()
 
+	templatePath := "magefiles/tmpl/README.md.tmpl"
+
 	fmt.Println("Updating docs.")
-	if err := docs.CreatePackageDocs(fs, repo); err != nil {
+	if err := docs.CreatePackageDocs(fs, repo, templatePath); err != nil {
 		return fmt.Errorf("failed to update docs: %v", err)
 	}
 
