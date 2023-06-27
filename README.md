@@ -17,7 +17,7 @@ Guacinator is a command line utility to interact programmatically with [Apache G
 - [Getting Started](#getting-started)
 - [Dependencies](#dependencies)
 - [Usage](#usage)
-- [Developer Environment Setup](docs/dev.md)
+- [For Contributors and Developers](#for-contributors-and-developers)
 
 ---
 
@@ -126,3 +126,23 @@ Guacinator is a command line utility to interact programmatically with [Apache G
 
   ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" --delete-user "${USER_TO_DELETE}"
   ```
+
+---
+
+## For Contributors and Developers
+
+If you're a developer or contributor looking to work on
+Guacinator, follow these additional setup steps:
+
+1. Clone the repository and navigate to the project root:
+
+   ```bash
+   gh repo clone CowDogMoo/guacinator
+   cd guacinator
+   ```
+
+1. Install the dependencies:
+
+    ```bash
+    mage InstallDependencies
+    ```
