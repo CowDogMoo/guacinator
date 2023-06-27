@@ -1,40 +1,17 @@
-/*
-Copyright © 2022 Jayson Grace <jayson.e.grace@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
-
 package cmd
 
 import (
 	"embed"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/fatih/color"
-	"github.com/l50/goutils/v2/logging"
 	"github.com/l50/goutils/v2/sys"
 	"github.com/mitchellh/go-homedir"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
+
+	"golang.org/x/exp/slog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -56,6 +33,8 @@ var (
 		Use:   "guacinator",
 		Short: "Command line utility to interact programmatically with Apache Guacamole.",
 	}
+	logger  *slog.Logger
+	logFile *os.File
 
 	home, _          = homedir.Dir()
 	defaultConfigDir = filepath.Join(home, ".guacinator")
@@ -64,6 +43,7 @@ var (
 // Execute runs the root cobra command
 func Execute() {
 	cobra.CheckErr(rootCmd.Execute())
+	defer logFile.Close()
 }
 
 func init() {
@@ -71,7 +51,7 @@ func init() {
 
 	home, err = homedir.Dir()
 	if err != nil {
-		log.WithError(err).Error("failed to get the home directory")
+		logger.Error("failed to get the home directory: %v", err)
 		cobra.CheckErr(err)
 	}
 
@@ -83,7 +63,7 @@ func init() {
 		&debug, "debug", "", false, "Show debug messages.")
 
 	if err := viper.BindPFlag("debug", pf.Lookup("debug")); err != nil {
-		log.WithError(err).Error("failed to bind to debug in the yaml config")
+		fmt.Printf("failed to get the home directory: %v\n", err)
 		cobra.CheckErr(err)
 	}
 
@@ -91,40 +71,36 @@ func init() {
 }
 
 func configLogging() error {
-	fs := afero.NewOsFs()
-	logger, err := logging.CreateLogFile(fs, defaultConfigDir, "guacinator.log")
-	if err != nil {
-		log.WithError(err).Error("error creating the log file")
-	}
-
-	// Set log level
+	// Set log levels
 	configLogLevel := viper.GetString("log.level")
-	if logLevel, err := log.ParseLevel(configLogLevel); err != nil {
-		log.WithFields(log.Fields{"level": logLevel,
-			"fallback": "info"}).Warn("Invalid log level")
-	} else {
-		if debug {
-			log.Debug("Debug logs enabled")
-			logLevel = log.DebugLevel
-		}
-		log.SetLevel(logLevel)
-	}
-
-	// Set log format
-	switch viper.GetString("log.format") {
-	case "json":
-		log.SetFormatter(&log.JSONFormatter{})
+	var level slog.Level
+	switch configLogLevel {
+	case "debug":
+		level = slog.LevelDebug
 	default:
-		log.SetFormatter(&log.TextFormatter{
-			TimestampFormat: "2006-01-02 15:04:05",
-			FullTimestamp:   true,
-			ForceColors:     true,
-		})
+		level = slog.LevelInfo
 	}
 
-	// Output to both stdout and the log file
-	mw := io.MultiWriter(os.Stdout, logger.File)
-	log.SetOutput(mw)
+	// Create log file handlers
+	logFilePath := filepath.Join(defaultConfigDir, "guacinator.log")
+	logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		return fmt.Errorf("failed to open log file: %w", err)
+	}
+
+	// Setup options for logging
+	opts := slog.HandlerOptions{
+		Level: level,
+	}
+
+	handler := slog.NewJSONHandler(logFile, &opts)
+	logger = slog.New(handler)
+
+	// Replacing the global logger
+	slog.SetDefault(logger)
+
+	// Logging message
+	logger.Info("Initialization complete! Logging setup successfully.")
 
 	return nil
 }
@@ -133,7 +109,7 @@ func getConfigFile() ([]byte, error) {
 	configFileData, err := configContentsFs.ReadFile(
 		filepath.Join("config", defaultConfigName))
 	if err != nil {
-		log.WithError(err).Errorf("error reading config/ contents: %v", err)
+		logger.Error("error reading config/ contents: %v", err)
 		return configFileData, err
 	}
 
@@ -142,25 +118,25 @@ func getConfigFile() ([]byte, error) {
 
 func createConfigFile(cfgPath string) error {
 	if err := os.MkdirAll(filepath.Dir(cfgPath), os.ModePerm); err != nil {
-		log.WithError(err).Errorf("cannot create dir %s: %s", cfgPath, err)
+		logger.Error("cannot create dir %s: %s", cfgPath, err)
 		return err
 	}
 
 	configFileData, err := getConfigFile()
 	if err != nil {
-		log.WithError(err).Errorf("cannot get lines of config file: %v", err)
+		logger.Error("cannot get lines of config file: %v", err)
 		return err
 	}
 
 	if err := os.WriteFile(cfgPath, configFileData, os.ModePerm); err != nil {
-		log.WithError(err)
+		logger.Error("failed to write to config file: %v", err)
 		return err
 	}
 
 	cmd := "kubectl"
 	if !sys.CmdExists(cmd) {
 		err := fmt.Errorf("required program %s is not installed in $PATH, exiting", cmd)
-		log.WithError(err)
+		logger.Error(err.Error())
 		return err
 	}
 
@@ -169,6 +145,11 @@ func createConfigFile(cfgPath string) error {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	if err := configLogging(); err != nil {
+		fmt.Printf("failed to set up logging: %v\n", err)
+		cobra.CheckErr(err)
+	}
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -182,7 +163,7 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	if err := viper.ReadInConfig(); err != nil {
-		log.Info(color.BlueString(
+		logger.Info(color.BlueString(
 			"No config file found - creating " +
 				filepath.Join(defaultConfigDir,
 					defaultConfigName) +
@@ -190,21 +171,17 @@ func initConfig() {
 
 		if err := createConfigFile(
 			filepath.Join(defaultConfigDir, defaultConfigName)); err != nil {
-			log.WithError(err).Error("failed to create the config file")
+			logger.Error("failed to create the config file: %v", err)
 			cobra.CheckErr(err)
 		}
 
 		if err := viper.ReadInConfig(); err != nil {
-			log.WithError(err).Error("error reading config file")
+			logger.Error("failed to read contents of config file: %v", err)
 			cobra.CheckErr(err)
 		} else {
-			log.Debug("Using config file: ", viper.ConfigFileUsed())
+			logger.Debug("Using config file: %v", viper.ConfigFileUsed())
 		}
 	} else {
-		log.Debug("Using config file: ", viper.ConfigFileUsed())
-	}
-
-	if err := configLogging(); err != nil {
-		log.WithError(err).Error("failed to set up logging")
+		logger.Debug("Using config file: %v", viper.ConfigFileUsed())
 	}
 }

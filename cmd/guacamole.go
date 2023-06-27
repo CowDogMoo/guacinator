@@ -87,19 +87,19 @@ var (
 			/* Retrieve CLI args */
 			guacURL, err = cmd.Flags().GetString("url")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get Guacamole URL from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 			user, err = cmd.Flags().GetString("username")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get username from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 			password, err = cmd.Flags().GetString("password")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get password from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
@@ -123,14 +123,14 @@ var (
 			// Get new guacadmin password from CLI (if applicable).
 			guacAdminPW, err = cmd.Flags().GetString("guacadmin-pw")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get input from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 
 			// Establish a client with Guacamole
 			if err := connectGuac(cfg); err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to connect to Guacamole: %v", err)
 				cobra.CheckErr(err)
 			}
@@ -138,14 +138,14 @@ var (
 			if guacAdminPW != "" {
 				token, err := getToken()
 				if err != nil {
-					log.WithError(err).Errorf(
+					logger.Error(
 						"failed to retrieve token from Guacamole: %v", err)
 					cobra.CheckErr(err)
 				}
 
-				log.Info("Setting secure password for guacadmin")
+				logger.Info("Setting secure password for guacadmin")
 				if err := setAdminPW(token, password, guacAdminPW); err != nil {
-					log.WithError(err).Errorf(
+					logger.Error(
 						"failed to set new Guacamole admin password: %v", err)
 					cobra.CheckErr(err)
 				}
@@ -154,28 +154,28 @@ var (
 
 			vncHost.Name, err = cmd.Flags().GetString("connection")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get input from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 
 			vncHost.Password, err = cmd.Flags().GetString("vnc-pw")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get input from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 
 			vncHost.IP, err = cmd.Flags().GetString("vnc-ip")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get input from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 
 			if vncHost.Name != "" && vncHost.Password != "" && vncHost.IP != "" {
 				if err := guacService.CreateGuacamoleConnection(vncHost); err != nil {
-					log.WithError(err).Errorf(
+					logger.Error(
 						"failed to create %s connection in Guacamole: %v", vncHost.Name, err)
 					cobra.CheckErr(err)
 				}
@@ -189,13 +189,13 @@ var (
 
 			delUser, err := cmd.Flags().GetString("delete-user")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get input from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 			if delUser != "" {
 				if err := guacService.DeleteGuacUser(delUser); err != nil {
-					log.WithError(err).Errorf(
+					logger.Error(
 						"failed to delete %s from Guacamole: %v", delUser, err)
 					cobra.CheckErr(err)
 				}
@@ -204,13 +204,13 @@ var (
 
 			newAdmin, err := cmd.Flags().GetString("new-admin")
 			if err != nil {
-				log.WithError(err).Errorf(
+				logger.Error(
 					"failed to get input from CLI input: %v", err)
 				cobra.CheckErr(err)
 			}
 			if newAdmin != "" {
 				if err := guacService.CreateAdminUser(newAdmin, password); err != nil {
-					log.WithError(err).Errorf(
+					logger.Error(
 						"failed to create %s admin in Guacamole: %v", newAdmin, err)
 					cobra.CheckErr(err)
 				}
@@ -227,21 +227,21 @@ func init() {
 	guacamoleCmd.Flags().StringP(
 		"url", "l", "", "Guacamole URL.")
 	if err := guacamoleCmd.MarkFlagRequired("url"); err != nil {
-		log.WithError(err).Errorf(
+		logger.Error(
 			"failed to mark required flag url: %v", err)
 		cobra.CheckErr(err)
 	}
 	guacamoleCmd.Flags().StringP(
 		"username", "u", "", "Username used to authenticate with Guacamole.")
 	if err := guacamoleCmd.MarkFlagRequired("username"); err != nil {
-		log.WithError(err).Errorf(
+		logger.Error(
 			"failed to mark required flag username: %v", err)
 		cobra.CheckErr(err)
 	}
 	guacamoleCmd.Flags().StringP(
 		"password", "p", "", "Password used to authenticate with Guacamole.")
 	if err := guacamoleCmd.MarkFlagRequired("password"); err != nil {
-		log.WithError(err).Errorf(
+		logger.Error(
 			"failed to mark required flag password: %v", err)
 		cobra.CheckErr(err)
 	}
@@ -293,7 +293,7 @@ func (g *GuacServiceImpl) CreateGuacamoleConnection(vncHost VncHost) error {
 	}
 
 	if err := guacClient.CreateConnection(&newConnection); err != nil {
-		log.WithError(err).Errorf(
+		logger.Error(
 			"failed to create %s connection in Guacamole: %v", vncHost.Name, err)
 		return err
 	}
@@ -372,7 +372,9 @@ func getToken() (string, error) {
 		})
 
 	if err != nil {
-		log.WithError(err)
+		logger.Error(
+			"failed to get token from Guacamole: %v", err,
+		)
 		return token, err
 	}
 
@@ -380,13 +382,17 @@ func getToken() (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.WithError(err)
+		logger.Error(
+			"failed to read response body from Guacamole: %v", err,
+		)
 		return token, err
 	}
 
 	var tokenresp types.AuthenticationResponse
 	if err := json.Unmarshal(body, &tokenresp); err != nil {
-		log.WithError(err)
+		logger.Error(
+			"failed to unmarshal response body from Guacamole: %v", err,
+		)
 		return token, err
 	}
 	token = tokenresp.AuthToken
@@ -412,14 +418,18 @@ func setAdminPW(token string, old string, new string) error {
 
 	payload, err := json.Marshal(data)
 	if err != nil {
-		log.WithError(err)
+		logger.Error(
+			"failed to marshal payload for Guacamole: %v", err,
+		)
 		return err
 	}
 
 	adminPWResetURL := fmt.Sprintf("%s://%s/api/session/data/postgresql/users/guacadmin/password", scheme, guacURL)
 	req, err := http.NewRequest("PUT", adminPWResetURL, bytes.NewBuffer(payload))
 	if err != nil {
-		log.WithError(err)
+		logger.Error(
+			"failed to create request for Guacamole: %v", err,
+		)
 		return err
 	}
 
@@ -429,14 +439,18 @@ func setAdminPW(token string, old string, new string) error {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		log.WithError(err)
+		logger.Error(
+			"failed to send request to Guacamole: %v", err,
+		)
 		return err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 204 {
-		log.WithError(fmt.Errorf("failed to change password: %v", err))
+		logger.Error(
+			"failed to change password: %v", err,
+		)
 	}
 
 	return nil
