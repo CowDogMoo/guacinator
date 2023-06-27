@@ -24,17 +24,6 @@ repos:
   #     - id: prettier
   #       files: \.(json|md|yaml|yml)$
 
-  - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: 3.0.0
-    hooks:
-      - id: script-must-have-extension
-        name: Ensure shell scripts end with .sh
-        types: [shell]
-      - id: shellcheck
-      - id: shfmt
-      # Configuration in .mdlrc and .hooks/linters/mdstyle.rb
-      - id: markdownlint
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.5
     hooks:
@@ -68,12 +57,6 @@ repos:
         entry: .hooks/go-unit-tests.sh coverage
         files: '\.go$'
 
-      - id: go-copyright
-        name: Ensure all go files have the copyright header
-        language: script
-        entry: .hooks/go-copyright.sh
-        files: '\.go$'
-
       - id: go-vet
         name: Run go vet
         language: script
@@ -85,3 +68,14 @@ repos:
         language: script
         entry: .hooks/generate-docs.sh
         files: '\.go$'
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: script-must-have-extension
+        name: Ensure shell scripts end with .sh
+        types: [shell]
+      - id: shellcheck
+      - id: shfmt
+      # Configuration in .mdlrc and .hooks/linters/mdstyle.rb
+      - id: markdownlint
