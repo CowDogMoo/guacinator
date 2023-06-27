@@ -10,6 +10,7 @@ import (
 	"github.com/l50/goutils/v2/sys"
 	"github.com/mitchellh/go-homedir"
 
+	slogmulti "github.com/samber/slog-multi"
 	"golang.org/x/exp/slog"
 
 	"github.com/spf13/cobra"
@@ -93,7 +94,15 @@ func configLogging() error {
 		Level: level,
 	}
 
-	handler := slog.NewJSONHandler(logFile, &opts)
+	// File logger
+	fileHandler := slog.NewJSONHandler(logFile, &opts)
+
+	// Stdout logger
+	stdoutHandler := slog.NewJSONHandler(os.Stdout, &opts)
+
+	// Combining both handlers
+	handler := slogmulti.Fanout(fileHandler, stdoutHandler)
+
 	logger = slog.New(handler)
 
 	// Replacing the global logger

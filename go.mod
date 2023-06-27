@@ -6,6 +6,7 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/l50/goutils/v2 v2.0.5
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/samber/slog-multi v0.6.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
@@ -35,6 +36,7 @@ require (
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/samber/lo v1.38.1 // indirect
 	github.com/skeema/knownhosts v1.1.1 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
