@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/cowdogmoo/guacinator v1.0.0
 	github.com/fatih/color v1.15.0
-	github.com/l50/goutils v1.3.0
+	github.com/l50/goutils/v2 v2.0.5
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
@@ -58,9 +58,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
-	github.com/tidwall/gjson v1.14.4 // indirect
-	github.com/tidwall/match v1.1.1 // indirect
-	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
