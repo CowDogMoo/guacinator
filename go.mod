@@ -5,9 +5,8 @@ go 1.20
 require (
 	github.com/cowdogmoo/guacinator v1.0.0
 	github.com/fatih/color v1.15.0
-	github.com/l50/goutils/v2 v2.0.5
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
@@ -37,6 +36,7 @@ require (
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
+	github.com/l50/goutils v1.1.8 // indirect
 	github.com/lufia/plan9stats v0.0.0-20230326075908-cb1d2100619a // indirect
 	github.com/magefile/mage v1.15.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
