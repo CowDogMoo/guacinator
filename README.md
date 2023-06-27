@@ -45,22 +45,31 @@ Guacinator is a command line utility to interact programmatically with [Apache G
 
 ## Dependencies
 
-- [Install gvm](https://github.com/moovweb/gvm):
+- [Install asdf](https://asdf-vm.com/):
 
   ```bash
-  bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+
   ```
 
-- [Install golang](https://go.dev/):
+- Install and use asdf plugins to manage go, python, and ruby for this project:
 
   ```bash
-  source .gvm
+  source .asdf
+  ```
+
+  Alternatively, you can pick and choose which plugins to install:
+
+  ```bash
+  # Employ asdf for this project's python:
+  source .asdf python
   ```
 
 - [Install pre-commit](https://pre-commit.com/):
 
   ```bash
-  brew install pre-commit
+  python3 -m pip install --upgrade pip
+  python3 -m pip install pre-commit
   ```
 
 - [Install Mage](https://magefile.org/):
@@ -73,7 +82,7 @@ Guacinator is a command line utility to interact programmatically with [Apache G
 
 ## Usage
 
-- Compile guacinator:
+- Compile guacinator (if not using downloaded release):
 
   ```bash
   go build
@@ -87,9 +96,11 @@ Guacinator is a command line utility to interact programmatically with [Apache G
   GUAC_USER=guacadmin
   GUAC_PW=guacadmin
   VNC_IP="$(kubectl get service -o wide | grep ubuntu-vnc | awk '{print $3}')"
-  VNC_PW="$(kubectl exec -it deployments/ubuntu -- zsh -c 'vncpwd /home/ubuntu/.vnc/passwd' | awk -F ' ' '{print $2}')"
+  VNC_PW="$(kubectl exec -it deployments/ubuntu -- zsh -c 'vncpwd \
+    /home/ubuntu/.vnc/passwd' | awk -F ' ' '{print $2}')"
 
-  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" --connection "${CONNECTION_NAME}" --vnc-ip "${VNC_IP}" --vnc-pw "${VNC_PW}"
+  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" \
+    --connection "${CONNECTION_NAME}" --vnc-ip "${VNC_IP}" --vnc-pw "${VNC_PW}"
   ```
 
 - Update the `guacadmin` user's password in Guacamole:
@@ -101,7 +112,8 @@ Guacinator is a command line utility to interact programmatically with [Apache G
   GUAC_PW=guacadmin
   NEW_GUAC_PW=s1cknewpassword
 
-  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" --guacadmin-pw "${NEW_GUAC_PW}"
+  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" \
+    --guacadmin-pw "${NEW_GUAC_PW}"
   ```
 
 - Create a new Guacamole admin user:
@@ -113,7 +125,8 @@ Guacinator is a command line utility to interact programmatically with [Apache G
   GUAC_PW=guacadmin
   NEW_GUAC_ADMIN=guacadmindos
 
-  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" --new-admin "${NEW_GUAC_ADMIN}"
+  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" \
+    --new-admin "${NEW_GUAC_ADMIN}"
   ```
 
 - Delete a Guacamole user:
@@ -124,7 +137,8 @@ Guacinator is a command line utility to interact programmatically with [Apache G
   GUAC_PW=guacadmin
   USER_TO_DELETE=someuser
 
-  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" --delete-user "${USER_TO_DELETE}"
+  ./guacinator guacamole -u "${GUAC_USER}" -p "${GUAC_PW}" -l "${GUAC_URL}" \
+  --delete-user "${USER_TO_DELETE}"
   ```
 
 ---
