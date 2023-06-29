@@ -32,7 +32,6 @@ import (
 	"os"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	guac "github.com/techBeck03/guacamole-api-client"
@@ -179,7 +178,7 @@ var (
 				}
 				os.Exit(0)
 			} else if vncHost.Name != "" && vncHost.Password == "" || vncHost.IP == "" {
-				log.Error(
+				logger.Error(
 					"you must provide all required information to " +
 						"add a new connection in Guacamole")
 				cobra.CheckErr(err)
