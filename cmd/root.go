@@ -7,10 +7,11 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
+	"github.com/l50/goutils/v2/logging"
 	"github.com/l50/goutils/v2/sys"
+
 	"github.com/mitchellh/go-homedir"
 
-	slogmulti "github.com/samber/slog-multi"
 	"golang.org/x/exp/slog"
 
 	"github.com/spf13/cobra"
@@ -34,7 +35,7 @@ var (
 		Use:   "guacinator",
 		Short: "Command line utility to interact programmatically with Apache Guacamole.",
 	}
-	logger  *slog.Logger
+	logger  logging.Logger
 	logFile *os.File
 
 	home, _          = homedir.Dir()
@@ -52,7 +53,7 @@ func init() {
 
 	home, err = homedir.Dir()
 	if err != nil {
-		logger.Error("failed to get the home directory: %v", err)
+		logger.Println("failed to get the home directory:", err)
 		cobra.CheckErr(err)
 	}
 
@@ -64,7 +65,7 @@ func init() {
 		&debug, "debug", "", false, "Show debug messages.")
 
 	if err := viper.BindPFlag("debug", pf.Lookup("debug")); err != nil {
-		fmt.Printf("failed to get the home directory: %v\n", err)
+		fmt.Printf("Failed to get the home directory: %v\n", err)
 		cobra.CheckErr(err)
 	}
 
@@ -84,32 +85,13 @@ func configLogging() error {
 
 	// Create log file handlers
 	logFilePath := filepath.Join(defaultConfigDir, "guacinator.log")
-	logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logger, err = logging.ConfigureLogger(level, logFilePath)
 	if err != nil {
-		return fmt.Errorf("failed to open log file: %w", err)
+		return fmt.Errorf("failed to set up logging: %w", err)
 	}
-
-	// Setup options for logging
-	opts := slog.HandlerOptions{
-		Level: level,
-	}
-
-	// File logger
-	fileHandler := slog.NewJSONHandler(logFile, &opts)
-
-	// Stdout logger
-	stdoutHandler := slog.NewJSONHandler(os.Stdout, &opts)
-
-	// Combining both handlers
-	handler := slogmulti.Fanout(fileHandler, stdoutHandler)
-
-	logger = slog.New(handler)
-
-	// Replacing the global logger
-	slog.SetDefault(logger)
 
 	// Logging message
-	logger.Info("Initialization complete! Logging setup successfully.")
+	logger.Println("Initialization complete! Logging setup successfully.")
 
 	return nil
 }
@@ -133,7 +115,12 @@ func createConfigFile(cfgPath string) error {
 
 	configFileData, err := getConfigFile()
 	if err != nil {
-		logger.Error("cannot get lines of config file: %v", err)
+		logger.Error("failed to get config file data: %v", err)
+		return err
+	}
+
+	if err := os.WriteFile(cfgPath, configFileData, os.ModePerm); err != nil {
+		logger.Error("failed to write to config file: %v\n", err)
 		return err
 	}
 
@@ -172,7 +159,7 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Info(color.BlueString(
+		logger.Println(color.BlueString(
 			"No config file found - creating " +
 				filepath.Join(defaultConfigDir,
 					defaultConfigName) +
@@ -188,9 +175,9 @@ func initConfig() {
 			logger.Error("failed to read contents of config file: %v", err)
 			cobra.CheckErr(err)
 		} else {
-			logger.Debug("Using config file: %v", viper.ConfigFileUsed())
+			logger.Printf("Using config file: %s", viper.ConfigFileUsed())
 		}
 	} else {
-		logger.Debug("Using config file: %v", viper.ConfigFileUsed())
+		logger.Printf("Using config file: %s", viper.ConfigFileUsed())
 	}
 }
