@@ -13,6 +13,10 @@ area/pre-commit:
 area/magefiles:
   - "magefiles/*"
 
+area/asdf:
+  - ".tool-versions"
+  - ".asdf"
+
 area/go-mod-sum:
   - "go.mod"
   - "go.sum"
