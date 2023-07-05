@@ -49,7 +49,6 @@ Guacinator is a command line utility to interact programmatically with [Apache G
 
   ```bash
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-
   ```
 
 - Install and use asdf plugins to manage go, python, and ruby for this project:
@@ -157,6 +156,6 @@ Guacinator, follow these additional setup steps:
 
 1. Install the dependencies:
 
-    ```bash
-    mage InstallDependencies
-    ```
+   ```bash
+   mage InstallDependencies
+   ```
