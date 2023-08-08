@@ -10,7 +10,7 @@ require (
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
 	github.com/techBeck03/guacamole-api-client v1.4.1
-	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
+	golang.org/x/exp v0.0.0-20230807204917-050eac23e9de
 )
 
 require (
