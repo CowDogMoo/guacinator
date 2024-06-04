@@ -1,8 +1,4 @@
-#!/bin/bash
-
-set -ex
-
-copyright_header='/*
+/*
 Copyright © 2024-present, Jayson Grace <jayson.e.grace@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,16 +18,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-*/'
+*/
+package config
 
-while IFS= read -r -d '' file; do
-    if ! grep -qF "$copyright_header" "$file"; then
-        echo "Adding copyright header to ${file}"
-        temp_file=$(mktemp)
-        echo "${copyright_header}" > "${temp_file}"
-        # Add an empty line after the copyright header
-        echo "" >> "${temp_file}"
-        cat "${file}" >> "${temp_file}"
-        mv "${temp_file}" "${file}"
-    fi
-done < <(find . -type f -name "*.go" -print0)
+// Config is the struct that holds the configuration for the application.
+//
+// **Attributes:**
+//
+// Debug: A boolean flag to enable debug mode.
+// Log: The configuration for the logger.
+type Config struct {
+	Debug bool      `mapstructure:"debug"`
+	Log   LogConfig `mapstructure:"log"`
+}
+
+// LogConfig stores the configuration for the logger.
+//
+// **Attributes:**
+//
+// Format: The format for the log messages.
+// Level: The logging level.
+// LogPath: The path to the log file.
+type LogConfig struct {
+	Format  string `mapstructure:"format"`
+	Level   string `mapstructure:"level"`
+	LogPath string `mapstructure:"log_path"`
+}

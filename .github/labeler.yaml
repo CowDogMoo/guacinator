@@ -1,22 +1,22 @@
 ---
+area/cmd:
+  - changed-files:
+      - any-glob-to-any-file: "cmd/**/*"
+
+area/docs:
+  - changed-files:
+      - any-glob-to-any-file: "docs/**/*"
+
 area/github:
-  - ".github/**/*"
+  - changed-files:
+      - any-glob-to-any-file: ".github/**/*"
 
 area/pre-commit:
-  - ".pre-commit-config.yaml"
-  - ".hooks/**/*"
-
--area/go:
-  - "cmd/**/*"
-  - "main.go"
-
-area/magefiles:
-  - "magefiles/*"
-
-area/asdf:
-  - ".tool-versions"
-  - ".asdf"
+  - changed-files:
+      - any-glob-to-any-file: .pre-commit-config.yaml
+      - any-glob-to-any-file: .hooks/**/*
 
 area/go-mod-sum:
-  - "go.mod"
-  - "go.sum"
+  - changed-files:
+      - any-glob-to-any-file: "go.mod"
+      - any-glob-to-any-file: "go.sum"

@@ -2,18 +2,15 @@ package cmd
 
 import (
 	"embed"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/fatih/color"
-	"github.com/l50/goutils/v2/logging"
+	"github.com/cowdogmoo/guacinator/pkg/config"
+	log "github.com/cowdogmoo/guacinator/pkg/logging"
 	"github.com/l50/goutils/v2/sys"
-
 	"github.com/mitchellh/go-homedir"
-
-	"golang.org/x/exp/slog"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -26,158 +23,117 @@ const (
 var (
 	//go:embed config/*
 	configContentsFs embed.FS
+	guacConfigDir    string
+	guacConfigFile   string
+	cfg              config.Config
 
-	cfgFile string
-	debug   bool
-	err     error
+	debug bool
 
 	rootCmd = &cobra.Command{
 		Use:   "guacinator",
 		Short: "Command line utility to interact programmatically with Apache Guacamole.",
 	}
-	logger  logging.Logger
-	logFile *os.File
 
 	home, _          = homedir.Dir()
 	defaultConfigDir = filepath.Join(home, ".guacinator")
 )
 
-// Execute runs the root cobra command
-func Execute() {
-	cobra.CheckErr(rootCmd.Execute())
-	defer logFile.Close()
-}
-
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	home, err = homedir.Dir()
-	if err != nil {
-		logger.Println("failed to get the home directory:", err)
-		cobra.CheckErr(err)
-	}
-
-	pf := rootCmd.PersistentFlags()
-	pf.StringVar(
-		&cfgFile, "config", "", "config file (default is $HOME/.guacinator/guacinator-config.yaml)")
-
-	pf.BoolVarP(
-		&debug, "debug", "", false, "Show debug messages.")
-
-	if err := viper.BindPFlag("debug", pf.Lookup("debug")); err != nil {
-		fmt.Printf("Failed to get the home directory: %v\n", err)
-		cobra.CheckErr(err)
-	}
-
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func configLogging() error {
-	// Set log levels
-	configLogLevel := viper.GetString("log.level")
-	var level slog.Level
-	switch configLogLevel {
-	case "debug":
-		level = slog.LevelDebug
-	default:
-		level = slog.LevelInfo
-	}
-
-	// Create log file handlers
-	logFilePath := filepath.Join(defaultConfigDir, "guacinator.log")
-	logger, err = logging.ConfigureLogger(level, logFilePath)
-	if err != nil {
-		return fmt.Errorf("failed to set up logging: %w", err)
-	}
-
-	// Logging message
-	logger.Println("Initialization complete! Logging setup successfully.")
-
-	return nil
-}
-
-func getConfigFile() ([]byte, error) {
-	configFileData, err := configContentsFs.ReadFile(
-		filepath.Join("config", defaultConfigName))
-	if err != nil {
-		logger.Error("error reading config/ contents: %v", err)
-		return configFileData, err
-	}
-
-	return configFileData, nil
-}
-
-func createConfigFile(cfgPath string) error {
-	if err := os.MkdirAll(filepath.Dir(cfgPath), os.ModePerm); err != nil {
-		logger.Error("cannot create dir %s: %s", cfgPath, err)
-		return err
-	}
-
-	configFileData, err := getConfigFile()
-	if err != nil {
-		logger.Error("failed to get config file data: %v", err)
-		return err
-	}
-
-	if err := os.WriteFile(cfgPath, configFileData, os.ModePerm); err != nil {
-		logger.Error("failed to write to config file: %v\n", err)
-		return err
-	}
-
-	if err := os.WriteFile(cfgPath, configFileData, os.ModePerm); err != nil {
-		logger.Error("failed to write to config file: %v", err)
-		return err
-	}
-
-	cmd := "kubectl"
-	if !sys.CmdExists(cmd) {
-		err := fmt.Errorf("required program %s is not installed in $PATH, exiting", cmd)
-		logger.Error(err.Error())
-		return err
-	}
-
-	return nil
+	setupRootCmd(rootCmd)
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if err := configLogging(); err != nil {
-		fmt.Printf("failed to set up logging: %v\n", err)
-		cobra.CheckErr(err)
+	viper.SetConfigType(defaultConfigType)
+	viper.AutomaticEnv()
+
+	home, err := homedir.Dir()
+	checkErr(err, "Failed to get home directory: %v")
+
+	guacConfigDir = filepath.Join(home, defaultConfigDir)
+	guacConfigFile = filepath.Join(guacConfigDir, fmt.Sprintf("%s.%s", defaultConfigName, defaultConfigType))
+
+	// Check if the config file exists, if not create the default config file
+	if _, err := os.Stat(guacConfigDir); os.IsNotExist(err) {
+		fmt.Printf("Config file not found, creating default config file at %s", guacConfigFile)
+		createConfig(guacConfigFile)
 	}
 
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Search for config yaml file in the config directory
-		viper.AddConfigPath(defaultConfigDir)
-		viper.SetConfigType(defaultConfigType)
-		viper.SetConfigName(defaultConfigName)
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
+	viper.SetConfigFile(guacConfigFile)
 
 	if err := viper.ReadInConfig(); err != nil {
-		logger.Println(color.BlueString(
-			"No config file found - creating " +
-				filepath.Join(defaultConfigDir,
-					defaultConfigName) +
-				" with default values"))
-
-		if err := createConfigFile(
-			filepath.Join(defaultConfigDir, defaultConfigName)); err != nil {
-			logger.Error("failed to create the config file: %v", err)
-			cobra.CheckErr(err)
-		}
-
-		if err := viper.ReadInConfig(); err != nil {
-			logger.Error("failed to read contents of config file: %v", err)
-			cobra.CheckErr(err)
-		} else {
-			logger.Printf("Using config file: %s", viper.ConfigFileUsed())
-		}
-	} else {
-		logger.Printf("Using config file: %s", viper.ConfigFileUsed())
+		checkErr(err, "Can't read config: %v")
 	}
+
+	if err := viper.Unmarshal(&guacCfg); err != nil {
+		checkErr(err, "Failed to unmarshal config: %v")
+	}
+
+	err = log.Initialize(guacConfigDir, cfg.Log.Level, cfg.Log.LogPath)
+	checkErr(err, "Failed to initialize the logger: %v")
+
+	// Check for required dependencies after initializing the logger
+	checkErr(depCheck(), "Dependency check failed")
+}
+
+func createConfig(cfgPath string) {
+	cfgDir := filepath.Dir(cfgPath)
+
+	// Ensure the configuration directory exists
+	if _, err := os.Stat(cfgDir); os.IsNotExist(err) {
+		fmt.Printf("Creating config directory %s", cfgDir)
+		checkErr(os.MkdirAll(cfgDir, os.ModePerm), "failed to create config directory %s: %v")
+	}
+
+	// Write the default config file if it does not exist
+	if _, err := os.Stat(cfgPath); os.IsNotExist(err) {
+		configFileData, err := configContentsFs.ReadFile(filepath.Join("config", "config.yaml"))
+		checkErr(err, "failed to read embedded config: %v")
+		checkErr(os.WriteFile(cfgPath, configFileData, 0644), "failed to write config to %s: %v")
+		fmt.Printf("Default config file created at %s", cfgPath)
+	} else {
+		fmt.Printf("Config file already exists at %s", cfgPath)
+	}
+}
+
+func setupRootCmd(cmd *cobra.Command) {
+	pf := cmd.PersistentFlags()
+	pf.StringVar(&guacConfigFile, "config", "", "config file (default is $HOME/.guacinator/guacinator-config.yaml)")
+	if err := viper.BindPFlag("config", pf.Lookup("config")); err != nil {
+		log.Error("Failed to bind the config flag: %v", err)
+	}
+
+	pf.BoolVarP(
+		&debug, "debug", "d", false, "Show debug messages.")
+	if err := viper.BindPFlag("debug", pf.Lookup("debug")); err != nil {
+		checkErr(err, "Failed to bind the debug flag: %v")
+	}
+
+	cmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func checkErr(err error, format string) {
+	if err != nil {
+		log.Error(format, err)
+		os.Exit(1)
+	}
+}
+
+func depCheck() error {
+	if !sys.CmdExists("kubectl") {
+		errMsg := "required program kubectl is not installed in $PATH, exiting"
+		log.Error(errMsg)
+		return errors.New(errMsg)
+	}
+
+	log.Debug("All dependencies are satisfied.")
+
+	return nil
+}
+
+// Execute runs the root cobra command. It checks for errors and exits
+// the program if any are encountered.
+func Execute() {
+	checkErr(rootCmd.Execute(), "Command execution failed")
 }

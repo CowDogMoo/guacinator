@@ -12,28 +12,42 @@ jobs:
     steps:
       - name: Set up git repository
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          fetch-depth: 0 # Ensure all tags are fetched
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential \
+                                  btrfs-progs \
+                                  libgpgme-dev \
+                                  libbtrfs-dev \
+                                  pkg-config \
+                                  slirp4netns \
+                                  uidmap
+          mkdir -p $HOME/.config
+          mkdir -p $HOME/.local/share
+          echo "export XDG_RUNTIME_DIR=$HOME/.run" >> $GITHUB_ENV
+          echo "export XDG_CONFIG_HOME=$HOME/.config" >> $GITHUB_ENV
+          echo "export XDG_DATA_HOME=$HOME/.local/share" >> $GITHUB_ENV
 
       - name: Fetch all tags
         run: git fetch --force --tags
 
       - name: Set up Go
-        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5
         with:
-          go-version: "1.20"
-
-      # - name: Install changelog gh cli extension
-      #   run: gh extension install chelnak/gh-changelog
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
+          go-version: "1.22"
+          cache-dependency-path: "**/*.sum"
 
       - name: Fix GOPATH
-        run: export PATH=$PATH:$(go env GOPATH)/bin
+        run: echo "PATH=$(go env GOPATH)/bin:$PATH" >> $GITHUB_ENV
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5
         with:
           distribution: goreleaser
           version: latest
-          args: release --rm-dist
+          args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}

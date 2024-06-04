@@ -1,8 +1,10 @@
 # guacinator/cmd
 
-The `guacinator/cmd` package provides guacamole CLI utilities.
+The `cmd` package provides guacamole CLI utilities.
 
-Table of contents:
+---
+
+## Table of contents
 
 - [Functions](#functions)
 - [Installation](#installation)
@@ -15,32 +17,52 @@ Table of contents:
 
 ## Functions
 
-### CreateAdminUser
+### Execute()
+
+```go
+Execute()
+```
+
+Execute runs the root cobra command. It checks for errors and exits
+the program if any are encountered.
+
+---
+
+### GuacServiceImpl.CreateAdminUser(string)
 
 ```go
 CreateAdminUser(string) error
 ```
 
-CreateAdminUser creates a new admin user in Guacamole
-with the specified username and password.
+CreateAdminUser creates a new admin user in
+Guacamole with the specified
+username and password.
 
 **Parameters:**
 
 user: A string representing the desired username for the new admin user.
+
 password: A string representing the desired password for the new admin user.
 
 **Returns:**
 
 error: An error if the admin user cannot be created.
 
-### CreateGuacamoleConnection
+---
+
+### GuacServiceImpl.CreateGuacamoleConnection(VncHost)
 
 ```go
 CreateGuacamoleConnection(VncHost) error
 ```
 
 CreateGuacamoleConnection establishes a new connection
+
 in Guacamole using the provided VncHost information.
+CreatePackageDocs generates documentation for all Go packages in the current
+directory and its subdirectories. It traverses the file tree using a provided
+afero.Fs and Repo to create a new README.md file in each directory containing
+a Go package. It uses a specified template file for generating the README files.
 
 **Parameters:**
 
@@ -50,7 +72,9 @@ vncHost: A VncHost struct containing the necessary information for the connectio
 
 error: An error if the connection cannot be created.
 
-### DeleteGuacUser
+---
+
+### GuacServiceImpl.DeleteGuacUser(string)
 
 ```go
 DeleteGuacUser(string) error
@@ -66,23 +90,15 @@ user: A string representing the username of the Guacamole user to be deleted.
 
 error: An error if the specified user cannot be deleted.
 
-### Execute
-
-```go
-Execute()
-```
-
-Execute runs the root cobra command
-
 ---
 
 ## Installation
 
 To use the guacinator/cmd package, you first need to install it.
-Follow the steps below to install via go get.
+Follow the steps below to install via go install.
 
 ```bash
-go get github.com/guacinator/cowdogmoo/cmd
+go install github.com/cowdogmoo/guacinator/cmd@latest
 ```
 
 ---
@@ -93,7 +109,7 @@ After installation, you can import the package in your Go project
 using the following import statement:
 
 ```go
-import "github.com/guacinator/cowdogmoo/cmd"
+import "github.com/cowdogmoo/guacinator/cmd"
 ```
 
 ---
@@ -120,5 +136,5 @@ you would like to change.
 ## License
 
 This project is licensed under the MIT
-License - see the [LICENSE](../LICENSE)
+License - see the [LICENSE](https://github.com/CowDogMoo/guacinator/blob/main/LICENSE)
 file for details.
