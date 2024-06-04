@@ -36,7 +36,7 @@ require (
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/samber/slog-multi v0.6.1 // indirect
-	github.com/skeema/knownhosts v1.1.1 // indirect
+	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
