@@ -1,29 +1,29 @@
 ---
 # Area
-- name: area/go
-  color: "3CB371" # medium sea green
+- name: area/cmd
+  color: "a18fbf" # purple
   description: >-
-    Changes made to go files
+    Changes made to command line utilities
+
+- name: area/docs
+  color: "8fbcbc" # teal
+  description: >-
+    Changes made to project documentation
+
 - name: area/github
-  color: "72ccf3" # light blue
+  color: "72ccf3" # blue
   description: >-
     Changes made to github actions
+
 - name: area/pre-commit
-  color: "BC9BE3" # purple
+  color: "BC9BE3" # lavender
   description: >-
     Changes made to pre-commit hooks
-- name: area/magefiles
-  color: "7BD7E0" # light blue
-  description: >-
-    Changes made to magefiles
+
 - name: area/go-mod-sum
-  color: "7BD7E0" # light blue
+  color: "7BD7E0" # cyan
   description: >-
     Changes made to go.mod and go.sum
-- name: area/asdf
-  color: "F4D1B7" # orange
-  description: >-
-    Changes made to asdf resources
 
 # Renovate
 - name: renovate/container
@@ -51,9 +51,9 @@
 - name: do-not-merge
   color: "ee0701" # red
 - name: docs
-  color: "F4D1B7" # light orange
+  color: "F4D1B7" # beige
 - name: enhancement
-  color: "84b6eb" # blue
+  color: "84b6eb" # light blue
 - name: question
   description: >-
     Clarification and/or additional information required to move forward
