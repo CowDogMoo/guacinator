@@ -1,24 +1,25 @@
 ---
+project_name: guacinator
+
+release:
+  github:
+    owner: CowDogMoo
+    name: guacinator
+
 builds:
   - id: "guacinator"
-
     binary: guacinator
-
     goos:
-      - linux
       - darwin
-
+      - linux
     goarch:
       - amd64
-      - arm
       - arm64
-
-    # GOARM to build for when GOARCH is arm.
-    goarm:
-      - 6
-      - 7
-
-    # GOAMD64 to build when GOARCH is amd64.
     goamd64:
       - v2
       - v3
+    env:
+      - CGO_ENABLED=0
+    goarm:
+      - "6"
+      - "7"
