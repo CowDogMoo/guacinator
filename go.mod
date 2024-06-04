@@ -33,7 +33,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/samber/lo v1.38.1 // indirect
 	github.com/samber/slog-multi v0.6.1 // indirect
 	github.com/skeema/knownhosts v1.1.1 // indirect
