@@ -21,6 +21,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/cyphar/filepath-securejoin v0.2.5 h1:6iR5tXJ/e6tJZzzdMc1km3Sa7RRIVBKAK32O2s7AYfo=
 github.com/cyphar/filepath-securejoin v0.2.5/go.mod h1:aPGpWjXOXUn2NCNjFvBE6aRxGGx79pTxQpKOJNYHHl4=
+github.com/cyphar/filepath-securejoin v0.3.0 h1:tXpmbiaeBrS/K2US8nhgwdKYnfAOnVfkcLPKFgFHeA0=
+github.com/cyphar/filepath-securejoin v0.3.0/go.mod h1:F7i41x/9cBF7lzCrVsYs9fuzwRZm4NQsGTBdpp6mETc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
@@ -120,6 +122,8 @@ github.com/samber/lo v1.43.0 h1:ts0VhPi8+ZQZFVLv/2Vkgt2Cds05FM2v3Enmv+YMBtg=
 github.com/samber/lo v1.43.0/go.mod h1:w7R6fO7h2lrnx/s0bWcZ55vXJI89p5UPM6+kyDL373E=
 github.com/samber/lo v1.44.0 h1:5il56KxRE+GHsm1IR+sZ/6J42NODigFiqCWpSc2dybA=
 github.com/samber/lo v1.44.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
+github.com/samber/lo v1.45.0 h1:TPK85Y30Lv9Jh8s3TrJeA94u1hwcbFA9JObx/vT6lYU=
+github.com/samber/lo v1.45.0/go.mod h1:RmDH9Ct32Qy3gduHQuKJ3gW1fMHAnE/fAzQuf6He5cU=
 github.com/samber/slog-multi v1.0.3 h1:8wlX8ioZE38h91DwoJBVnC7JfhgwERwlekY+NHsVsv0=
 github.com/samber/slog-multi v1.0.3/go.mod h1:TvwgIK4XPBb8Dn18as5uiTHf7in8gN/AtUXsT57UYuo=
 github.com/samber/slog-multi v1.1.0 h1:m5wfpXE8Qu2gCiR/JnhFGsLcWDOmTxnso32EMffVAY0=
@@ -185,6 +189,8 @@ golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8 h1:LoYXNGAShUG3m/ehNk4iFctuh
 golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8/go.mod h1:jj3sYF3dwk5D+ghuXyeI3r5MFf+NT2An6/9dOA95KSI=
 golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 h1:yixxcjnhBmY0nkL253HFVIm0JsFHwrHdT3Yh6szTnfY=
 golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8/go.mod h1:jj3sYF3dwk5D+ghuXyeI3r5MFf+NT2An6/9dOA95KSI=
+golang.org/x/exp v0.0.0-20240707233637-46b078467d37 h1:uLDX+AfeFCct3a2C7uIWBKMJIR3CJMhcgfrUAqjRK6w=
+golang.org/x/exp v0.0.0-20240707233637-46b078467d37/go.mod h1:M4RDyNAINzryxdtnbRXRL/OHtkFuWGRjvuhBJpk2IlY=
 golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4/go.mod h1:jJ57K6gSWd91VN4djpZkiMVwK6gcyfeH4XE8wZrZaV4=
 golang.org/x/mod v0.8.0/go.mod h1:iBbtSCu2XBx23ZKBPSOrRkjjQPZFPuis4dIYUhu/chs=
 golang.org/x/net v0.0.0-20190620200207-3b0461eec859/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
