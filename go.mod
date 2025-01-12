@@ -10,7 +10,7 @@ require (
 	github.com/l50/goutils/v2 v2.2.7
 	github.com/magefile/mage v1.15.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/spf13/afero v1.11.0
+	github.com/spf13/afero v1.12.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
