@@ -12,7 +12,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/afero v1.12.0
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/viper v1.19.0
+	github.com/spf13/viper v1.20.0
 	github.com/stretchr/testify v1.10.0
 	github.com/techBeck03/guacamole-api-client v1.4.1
 )
