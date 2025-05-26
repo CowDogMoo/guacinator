@@ -2,7 +2,7 @@ module github.com/cowdogmoo/guacinator
 
 go 1.23
 
-toolchain go1.23.2
+toolchain go1.24.3
 
 require (
 	github.com/bitfield/script v0.23.0
